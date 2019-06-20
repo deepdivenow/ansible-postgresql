@@ -12,5 +12,20 @@
     role_attr_flags: "{{item.role_attr_flags | default(omit)}}"
   become: yes
   become_user: "{{postgresql_admin_user}}"
+  when: postgresql_user_privileges|length > 0 and item.type is not defined
+  with_items: "{{ postgresql_user_privileges }}"
+
+- name: PostgreSQL | Update the user privileges 2
+  postgresql_privs:
+    db: "{{ item.db }}"
+    privs: "{{ item.priv }}"
+    type: "{{ item.type }}"
+    objs: "{{ item.objs }}"
+    role: "{{ item.name }}"
+    schema: "{{ item.schema | default(omit) }}"
+    login_host: "{{item.host | default(omit)}}"
+    login_user: "{{postgresql_admin_user}}"
+  become: yes
+  become_user: "{{postgresql_admin_user}}"
+  when: postgresql_user_privileges|length > 0 and item.type is defined
   with_items: "{{postgresql_user_privileges}}"
-  when: postgresql_users|length > 0
